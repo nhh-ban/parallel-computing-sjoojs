@@ -6,7 +6,7 @@ The assignments in BAN400 are organized through Github and Github Classroom. By 
 
 **Name:** Sondre Jensen Øverli
 
-**Student number:s195076
+**Student number:** s195076
 
 ## :information_source: Problem 1
 Update the personal information above.

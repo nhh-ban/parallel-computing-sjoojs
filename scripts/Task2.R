@@ -1,12 +1,13 @@
-# Assignment 1:  
-library(tweedie) 
-library(ggplot2)
-library(doParallel)
+#time
 library(tictoc)
-library(magrittr)
-library(tidyverse)
+library(doParallel)
+library(foreach)
 
-tic()
+# Assignment 1:  
+library(tweedie)
+library(ggplot2)
+
+
 
 simTweedieTest <-  
   function(N){ 
@@ -18,26 +19,16 @@ simTweedieTest <-
 
 
 # Assignment 2:  
-MTweedieTests <- function(N, M, sig) {
-  
-  # Set up the parallel backend
-  cores <- detectCores()
-  cl <- makeCluster(cores)
-  registerDoParallel(cl)
-  
-  # Split the M simulations across cores and get results
-  p.values <- foreach(m=1:M, .combine=c) %dopar% {
-    simTweedieTest(N)
-  }
-  
-  # Stop the parallel backend
-  stopCluster(cl)
-  
-  # Return the calculated value
-  sum(p.values < sig) / M
-}
+MTweedieTests <-  
+  function(N,M,sig){ 
+    sum(replicate(M,simTweedieTest(N)) < sig)/M 
+  } 
 
+num_cores <- detectCores()
+cl <- makeCluster(num_cores)
+registerDoParallel(cl)
 
+tic(paste0("Solution 29-35 ", num_cores, " cores"))
 
 # Assignment 3:  
 df <-  
@@ -46,29 +37,26 @@ df <-
     M = 1000, 
     share_reject = NA) 
 
-
-for(i in 1:nrow(df)){ 
-  df$share_reject[i] <-  
-    MTweedieTests( 
-      N=df$N[i], 
-      M=df$M[i], 
-      sig=.05) 
+df$share_reject <- 
+  foreach(i = 1:nrow(df), .combine = c, .packages = c("tweedie", "ggplot2")) %dopar% {
+  MTweedieTests(N = df$N[i], M = df$M[i], sig = .05)
 } 
 
+stopCluster(cl)
 
 
 
-## Assignemnt 4 
+## Assignemnt 4
 
-# This is one way of solving it - maybe you have a better idea? 
-# First, write a function for simulating data, where the "type" 
-# argument controls the distribution. We also need to ensure 
-# that the mean "mu" is the same for both distributions. This 
-# argument will also be needed in the t-test for the null 
-# hypothesis. Therefore, if we hard code in a value here 
-# we may later have an inconsistency between the mean of the 
-# distributions and the t-test. So, we add it as an explicit 
-# argument:  
+# This is one way of solving it - maybe you have a better idea?
+# First, write a function for simulating data, where the "type"
+# argument controls the distribution. We also need to ensure
+# that the mean "mu" is the same for both distributions. This
+# argument will also be needed in the t-test for the null
+# hypothesis. Therefore, if we hard code in a value here
+# we may later have an inconsistency between the mean of the
+# distributions and the t-test. So, we add it as an explicit
+# argument:
 
 
 library(magrittr)
@@ -150,9 +138,9 @@ df %>%
   ggplot2::ggplot(aes(x = log(N), y = share_reject, col = type)) +
   geom_line() +
   geom_hline(yintercept = .05) +
-  theme_bw() 
+  theme_bw()
 
-
-toc()
+toc(log = TRUE)
 printTicTocLog() %>%
   knitr::kable()
+

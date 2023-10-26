@@ -1,8 +1,7 @@
-library(magrittr)
-library(tictoc)
-library(tidyverse)
+library(knitr)
 library(doParallel)
-
+library(tictoc)
+# adding function to environment (used in 2 and 3 too)
 printTicTocLog <-
   function() {
     tic.log() %>%
@@ -18,11 +17,10 @@ printTicTocLog <-
                extra = "drop")
   }
 
-
-
-#Without parallel computing
-
-tic("Regular solution")
+tic.clearlog() #clearling log for initial config
+# taking time
+cores <- min(1, detectCores())
+tic("Regular loop")
 
 # Assignment 1:  
 library(tweedie) 
@@ -60,17 +58,27 @@ for(i in 1:nrow(df)){
       sig=.05) 
 } 
 
-## Assignemnt 4 
 
-# This is one way of solving it - maybe you have a better idea? 
-# First, write a function for simulating data, where the "type" 
-# argument controls the distribution. We also need to ensure 
-# that the mean "mu" is the same for both distributions. This 
-# argument will also be needed in the t-test for the null 
-# hypothesis. Therefore, if we hard code in a value here 
-# we may later have an inconsistency between the mean of the 
-# distributions and the t-test. So, we add it as an explicit 
-# argument: 
+
+
+
+
+
+## Assignemnt 4
+
+# This is one way of solving it - maybe you have a better idea?
+# First, write a function for simulating data, where the "type"
+# argument controls the distribution. We also need to ensure
+# that the mean "mu" is the same for both distributions. This
+# argument will also be needed in the t-test for the null
+# hypothesis. Therefore, if we hard code in a value here
+# we may later have an inconsistency between the mean of the
+# distributions and the t-test. So, we add it as an explicit
+# argument:
+
+
+library(magrittr)
+library(tidyverse)
 
 simDat <-
   function(N, type, mu) {
@@ -138,6 +146,7 @@ for (i in 1:nrow(df)) {
            df$type[i],
            .05)
 }
+
 # As you see, with normally distributed data, N can
 # be very small and the t-test is fine. With a tweedie,
 # "large enough" can be many thousands. If we try
@@ -147,11 +156,7 @@ df %>%
   ggplot2::ggplot(aes(x = log(N), y = share_reject, col = type)) +
   geom_line() +
   geom_hline(yintercept = .05) +
-  theme_bw() 
+  theme_bw()
 
-toc(log = TRUE)
-
-printTicTocLog() %>%
-  knitr::kable()
-
+toc1 <- toc(log = TRUE)
 
